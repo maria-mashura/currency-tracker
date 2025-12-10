@@ -1,6 +1,6 @@
 let ratesData = [];
 let bankOptionsInitialized = false;
-let sortState = {}; // хранит направление сортировки
+let sortState = {}; 
 
 async function loadRates() {
     try {
@@ -8,7 +8,6 @@ async function loadRates() {
         const data = await response.json();
         ratesData = data.rates || [];
 
-        // Заполняем фильтр банков (только текущие банки, кроме NBU)
         if (!bankOptionsInitialized) {
             const banks = new Set(ratesData.filter(r=>r.bank!=="NBU").map(r=>r.bank));
             const bankSelect = document.getElementById('bankFilter');
@@ -49,12 +48,10 @@ function displayTables() {
         tbodyNBU.appendChild(row);
     });
 
-    // --- Current Bank Rates (подсветка лучших курсов) ---
     let banksCurrent = ratesData.filter(r=>r.bank!=="NBU");
     if(currencyFilter!=="ALL") banksCurrent = banksCurrent.filter(r=>r.currency===currencyFilter);
     if(bankFilter!=="ALL") banksCurrent = banksCurrent.filter(r=>r.bank===bankFilter);
 
-    // оставляем только по одной строке на валюту на банк
     const latestMap = {};
     banksCurrent.forEach(r => {
         const key = `${r.bank}__${r.currency}`;
@@ -64,7 +61,6 @@ function displayTables() {
     });
     const latestArray = Object.values(latestMap);
 
-    // подсветка лучших курсов
     const bestBuy = {}, worstSell = {};
     latestArray.forEach(r => {
         const cur = r.currency;
@@ -84,7 +80,6 @@ function displayTables() {
         tbodyCurrent.appendChild(row);
     });
 
-    // --- Historical Table ---
 let history = ratesData;
 if (currencyFilter !== "ALL") {
     history = history.filter(r => r.currency === currencyFilter);
@@ -110,7 +105,6 @@ history.forEach(r => {
 
 }
 
-// --- Сортировка (для Current Bank Rates) ---
 function sortTable(tableId, keys){
     const table = document.getElementById(tableId);
     const tbody = table.tBodies[0];
