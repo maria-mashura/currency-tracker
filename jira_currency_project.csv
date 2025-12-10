@@ -1,0 +1,16 @@
+Issue Type,Summary,Description,Epic Link
+Epic,Currency Tracking Service,"A system that collects currency rates from 5 Ukrainian banks daily, stores them in a database, and displays them on a modern one-page website.",
+Story,Define functional requirements,"Create a full list of functional requirements for the currency tracking system.",Currency Tracking Service
+Story,Define non-functional requirements,"Document performance, usability, reliability, maintainability, and portability requirements.",Currency Tracking Service
+Story,Design database schema,"Create SQLite database schema with exchange_rates table for storing bank rates.",Currency Tracking Service
+Story,Implement PrivatBank data collector,"Write Python parser for PrivatBank API and save collected rates to database.",Currency Tracking Service
+Story,Implement Monobank data collector,"Write Python parser for Monobank API and save collected rates to database.",Currency Tracking Service
+Story,Implement Oshchadbank data collector,"Develop parser for Oshchadbank currency rates and integrate into data pipeline.",Currency Tracking Service
+Story,Implement UkrSibbank data collector,"Develop parser for UkrSibbank currency rates and integrate into data pipeline.",Currency Tracking Service
+Story,Implement Raiffeisen Bank data collector,"Develop parser for Raiffeisen currency rates and integrate into data pipeline.",Currency Tracking Service
+Story,Implement scheduler,"Set up APScheduler to collect data once per day automatically.",Currency Tracking Service
+Story,Develop API endpoints,"Create FastAPI endpoints: /rates/latest and /rates/{bank}.",Currency Tracking Service
+Story,Develop frontend UI,"Create a modern one-page interface with a currency rates table using HTML, JS, Tailwind.",Currency Tracking Service
+Story,Implement error handling,"Log errors, handle missing data, API downtime, and unexpected responses.",Currency Tracking Service
+Story,Testing,"Create test cases and test backend, frontend, and parsing logic.",Currency Tracking Service
+Story,Documentation and release,"Prepare README, diagrams, installation guide, and final release notes.",Currency Tracking Service

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Currency Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 50%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Курсы валют</h1>
+    <table id="ratesTable">
+        <thead>
+            <tr>
+                <th>Банк</th>
+                <th>Валюта</th>
+                <th>Покупка</th>
+                <th>Продажа</th>
+                <th>Дата</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+    async function loadRates() {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/rates/latest');
+            const data = await response.json();
+            const tbody = document.querySelector('#ratesTable tbody');
+            tbody.innerHTML = '';  // очистка таблицы
+
+            data.rates.forEach(rate => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${rate.bank}</td>
+                    <td>${rate.currency}</td>
+                    <td>${rate.buy.toFixed(2)}</td>
+                    <td>${rate.sell.toFixed(2)}</td>
+                    <td>${rate.date}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        } catch (err) {
+            console.error('Ошибка загрузки данных', err);
+        }
+    }
+
+    loadRates();
+    setInterval(loadRates, 60 * 1000); // обновление каждую минуту
+</script>
+
+</body>
+</html>

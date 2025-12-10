@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Currency Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Currency Tracker</h1>
+
+<label for="currencyFilter">Filter by currency:</label>
+<select id="currencyFilter" onchange="onFilterChange()">
+    <option value="ALL">All</option>
+    <option value="USD">USD</option>
+    <option value="EUR">EUR</option>
+</select>
+
+<label for="bankFilter">Filter by bank:</label>
+<select id="bankFilter" onchange="onFilterChange()">
+    <option value="ALL">All</option>
+</select>
+
+<h2>Current Rates (UAH Base)</h2>
+<table id="currentRates">
+    <thead>
+        <tr>
+            <th data-key="bank" onclick="sortTable('currentRates', ['bank','currency'])">Bank</th>
+            <th data-key="currency" onclick="sortTable('currentRates', ['currency','bank'])">Currency</th>
+            <th data-key="buy" onclick="sortTable('currentRates', ['buy'])">Buy (UAH/unit)</th>
+            <th data-key="sell" onclick="sortTable('currentRates', ['sell'])">Sell (UAH/unit)</th>
+            <th data-key="date" onclick="sortTable('currentRates', ['date'])">Date</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2>Historical Rates</h2>
+<table id="historicalRates">
+    <thead>
+        <tr>
+            <th data-key="bank" onclick="sortTable('historicalRates', ['bank','currency'])">Bank</th>
+            <th data-key="currency" onclick="sortTable('historicalRates', ['currency','bank'])">Currency</th>
+            <th data-key="buy" onclick="sortTable('historicalRates', ['buy'])">Buy (UAH/unit)</th>
+            <th data-key="sell" onclick="sortTable('historicalRates', ['sell'])">Sell (UAH/unit)</th>
+            <th data-key="date" onclick="sortTable('historicalRates', ['date'])">Date</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script src="script.js"></script>
+</body>
+</html>

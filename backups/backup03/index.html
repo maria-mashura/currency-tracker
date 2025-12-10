@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Currency Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 90%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; cursor: pointer; }
+        th { background-color: #f2f2f2; position: relative; }
+        th::after { content: " ▲"; font-size: 10px; position: absolute; right: 5px; opacity: 0.5; }
+        th.asc::after { content: " ▲"; opacity: 1; }
+        th.desc::after { content: " ▼"; opacity: 1; }
+        .best-buy { background-color: #c8e6c9; }
+        .best-sell { background-color: #ffcdd2; }
+        h2 { margin-top: 40px; }
+        select { font-size: 16px; margin: 0 10px 20px 0; }
+    </style>
+</head>
+<body>
+<h1>Currency Tracker</h1>
+
+<label for="currencyFilter">Filter by currency:</label>
+<select id="currencyFilter" onchange="loadRates()">
+    <option value="ALL">All</option>
+    <option value="USD">USD</option>
+    <option value="EUR">EUR</option>
+</select>
+
+<label for="bankFilter">Filter by bank:</label>
+<select id="bankFilter" onchange="loadRates()">
+    <option value="ALL">All</option>
+</select>
+
+<h2>Current Rates (UAH Base)</h2>
+<table id="currentRates">
+    <thead>
+        <tr>
+            <th onclick="sortTable('currentRates', ['bank', 'currency'])">Bank</th>
+            <th onclick="sortTable('currentRates', ['currency', 'bank'])">Currency</th>
+            <th onclick="sortTable('currentRates', ['buy'])">Buy (UAH/unit)</th>
+            <th onclick="sortTable('currentRates', ['sell'])">Sell (UAH/unit)</th>
+            <th onclick="sortTable('currentRates', ['date'])">Date</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2>Historical Rates</h2>
+<table id="historicalRates">
+    <thead>
+        <tr>
+            <th onclick="sortTable('historicalRates', ['bank', 'currency'])">Bank</th>
+            <th onclick="sortTable('historicalRates', ['currency', 'bank'])">Currency</th>
+            <th onclick="sortTable('historicalRates', ['buy'])">Buy (UAH/unit)</th>
+            <th onclick="sortTable('historicalRates', ['sell'])">Sell (UAH/unit)</th>
+            <th onclick="sortTable('historicalRates', ['date'])">Date</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+let ratesData = [];
+let bankOptionsInitialized = false;
+
+async function loadRates() {
+    try {
+        const currencyFilter = document.getElementById('currencyFilter').value;
+        const bankFilter = document.getElementById('bankFilter').value;
+
+        const response = await fetch('http://127.0.0.1:8000/rates/latest');
+        const data = await response.json();
+
+        ratesData = data.rates.filter(r => r.currency !== "RUB");
+
+        // Заполняем фильтр по банкам один раз
+        if (!bankOptionsInitialized) {
+            const bankSet = new Set(ratesData.map(r => r.bank));
+            const bankSelect = document.getElementById('bankFilter');
+            bankSet.forEach(bank => {
+                const opt = document.createElement('option');
+                opt.value = bank;
+                opt.textContent = bank;
+                bankSelect.appendChild(opt);
+            });
+            bankOptionsInitialized = true;
+        }
+
+        displayTables();
+    } catch (err) {
+        console.error('Error loading rates', err);
+    }
+}
+
+function displayTables() {
+    const currencyFilter = document.getElementById('currencyFilter').value;
+    const bankFilter = document.getElementById('bankFilter').value;
+
+    let filtered = ratesData;
+    if (currencyFilter !== "ALL") filtered = filtered.filter(r => r.currency === currencyFilter);
+    if (bankFilter !== "ALL") filtered = filtered.filter(r => r.bank === bankFilter);
+
+    // --- Current Rates ---
+    const latestMap = {};
+    filtered.forEach(rate => {
+        const key = rate.bank + "_" + rate.currency;
+        if (!latestMap[key] || new Date(rate.date) > new Date(latestMap[key].date)) {
+            latestMap[key] = rate;
+        }
+    });
+
+    const latestArray = Object.values(latestMap);
+
+    const bestBuy = {};
+    const worstSell = {};
+    latestArray.forEach(rate => {
+        if (!bestBuy[rate.currency] || rate.buy > bestBuy[rate.currency]) bestBuy[rate.currency] = rate.buy;
+        if (!worstSell[rate.currency] || rate.sell < worstSell[rate.currency]) worstSell[rate.currency] = rate.sell;
+    });
+
+    const tbodyCurrent = document.querySelector('#currentRates tbody');
+    tbodyCurrent.innerHTML = '';
+    latestArray.forEach(rate => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${rate.bank}</td>
+            <td>${rate.currency}</td>
+            <td class="${rate.buy === bestBuy[rate.currency] ? 'best-buy' : ''}">${rate.buy.toFixed(2)}</td>
+            <td class="${rate.sell === worstSell[rate.currency] ? 'best-sell' : ''}">${rate.sell.toFixed(2)}</td>
+            <td>${rate.date}</td>
+        `;
+        tbodyCurrent.appendChild(row);
+    });
+
+    // --- Historical Rates ---
+    const tbodyHist = document.querySelector('#historicalRates tbody');
+    tbodyHist.innerHTML = '';
+    filtered.forEach(rate => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${rate.bank}</td>
+            <td>${rate.currency}</td>
+            <td>${rate.buy.toFixed(2)}</td>
+            <td>${rate.sell.toFixed(2)}</td>
+            <td>${rate.date}</td>
+        `;
+        tbodyHist.appendChild(row);
+    });
+}
+
+
+function sortTable(tableId, keys) {
+    const table = document.getElementById(tableId);
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+
+    const stateKey = tableId + keys.join("-");
+    let asc = sortState[stateKey] === undefined ? true : !sortState[stateKey];
+    sortState[stateKey] = asc;
+
+    rows.sort((a, b) => {
+        for (let key of keys) {
+            let valA = a.dataset[key];
+            let valB = b.dataset[key];
+
+            // числовое сравнение
+            if (!isNaN(parseFloat(valA)) && !isNaN(parseFloat(valB))) {
+                valA = parseFloat(valA);
+                valB = parseFloat(valB);
+            } else {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+
+            if (valA > valB) return asc ? 1 : -1;
+            if (valA < valB) return asc ? -1 : 1;
+        }
+        return 0; // равны
+    });
+
+    // обновляем стрелки
+    table.querySelectorAll('th').forEach(th => th.classList.remove('asc','desc'));
+    // Добавляем стрелку только на первый столбец сортировки
+    const firstKey = keys[0];
+    for (let i=0;i<table.tHead.rows[0].cells.length;i++){
+        if(table.tHead.rows[0].cells[i].textContent.toLowerCase().includes(firstKey)){
+            table.tHead.rows[0].cells[i].classList.add(asc ? 'asc':'desc');
+            break;
+        }
+    }
+
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+loadRates();
+setInterval(loadRates, 60*1000);
+</script>
+</body>
+</html>
