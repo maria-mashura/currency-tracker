@@ -8,7 +8,6 @@ th.desc::after { content: " ▼"; opacity: 1; color: red; }
 th::after {
     content: "";
 }
-/* Стрелочки только в таблице Bank Rates */
 #bank-rates-table th[data-column="buy"]::after,
 #bank-rates-table th[data-column="sell"]::after {
     content: " ▲";
@@ -18,7 +17,6 @@ th::after {
     opacity: 0.25;
 }
 
-/* Активная сортировка ASC */
 #bank-rates-table th[data-column="buy"].asc::after,
 #bank-rates-table th[data-column="sell"].asc::after {
     content: " ▲";
@@ -26,7 +24,6 @@ th::after {
     color: green;
 }
 
-/* Активная сортировка DESC */
 #bank-rates-table th[data-column="buy"].desc::after,
 #bank-rates-table th[data-column="sell"].desc::after {
     content: " ▼";
