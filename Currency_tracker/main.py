@@ -83,7 +83,7 @@ def fetch_monobank():
         log_error("Monobank fetch error", e)
         return []
 
-# NBU API (один банк)
+# NBU API 
 def fetch_nbu():
     try:
         url = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json"
